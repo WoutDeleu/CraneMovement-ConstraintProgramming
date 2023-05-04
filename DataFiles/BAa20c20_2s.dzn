@@ -1,0 +1,11 @@
+N=20;%number of vessels
+L=1000;%quay length
+s=4;%max shift time
+d=10;%minimum safety distance
+C=20;%number of cranes
+r=400;%crane range
+qcbasepositions = array1d([21,50,79,109,138,168,197,226,256,285,315,344,374,403,432,462,491,521,550,580]);
+lengths = array1d([200,67,70,71,70,172,141,76,89,153,118,108,80,188,152,147,141,76,76,147]);
+arrivaltimes = array1d([30,137,82,113,103,31,66,20,7,30,119,121,3,4,110,40,103,8,89,60]);
+departuretimes = array1d([54,3,106,128,151,58,86,40,31,65,151,145,27,60,146,78,139,32,113,76]);
+minimumnumqcs = array1d([2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]);
