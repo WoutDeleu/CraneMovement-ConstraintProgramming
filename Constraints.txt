@@ -1,0 +1,30 @@
+Terminal (Environment)
+    - Lengte: L
+    - minimumdistance: d
+    - timeshift: s
+    - Berth location
+
+
+Vessel
+    - Arrival time: start_i
+    - Departure time: end_i
+    - Length: l_i
+
+    - Assignment A_i = k ((k -> k + l_i))
+
+    Elke vessel - op 1 plek op de terminal voor volledige tijdsperiode
+
+
+QC
+    - base position: p_c
+    - length: r
+
+
+
+Beslissingsvariabele
+    for all Vessels: st_i, A_i
+
+
+Constraints
+    a. Vessel moet door QC kunnen worden geserved
+    
