@@ -29,8 +29,15 @@ BESLISSINGSVARIABELEN
                 (QC)    [.. .. ..]
                         [.. .. ..]
 
+TUSSENVARIABELEN
+    timeoverlap = [vessel][vessel]
+    positionoverlap = [vessel][vessel]
+
 
 CONSTRAINTS
+    TUSSENVARIABELEN
+    a. timeoverlap
+
     VESSELS
     a. Geen 2 vessels op dezelfde positie (kleiner zijn dan d), op dezelfde tijd
     b. Time shift respecteren
@@ -57,4 +64,4 @@ EXTRA:
 
     overlap:
         t1_s < t2_s && t2_s < t1_e
-        t1_s > t2_s && t1_s < t2_e 
+        t2_s > t1_s && t1_s < t2_e 
