@@ -1,41 +1,60 @@
-Terminal (Environment)
-    - Lengte: L
-    - minimumdistance: d
-    - timeshift: s
-    - Berth location
+ALGEMENE INFO - SAMENGEVAT
+    Terminal (Environment)
+        - Lengte: L
+        - minimumdistance: d
+        - timeshift: s
+        - Berth location
 
 
-Vessel
-    - Arrival time: start_i
-    - Departure time: end_i
-    - Length: l_i
+    Vessel
+        - Arrival time: start_i
+        - Departure time: end_i
+        - Length: l_i
 
-    - Assignment A_i = k ((k -> k + l_i))
+        - Assignment A_i = k ((k -> k + l_i))
 
-    Elke vessel - op 1 plek op de terminal voor volledige tijdsperiode
-
-
-QC
-    - base position: p_c
-    - length: r
-
- 
-
-Beslissingsvariabele
-    for all Vessels: st_i, A_i, QC_i
+        Elke vessel - op 1 plek op de terminal voor volledige tijdsperiode
 
 
-Constraints
+    QC
+        - base position: p_c
+        - length: r
+
+
+BESLISSINGSVARIABELEN
+    A = [] (array voor elke vessel een locatie)
+    st = [] (voor elke vessel een starttime)
+    QC_assignment =     (Vessels)
+                        [.. .. ..] (Voor elke vessel een allocatie van een QC (1 = allocatie), (0= geen allocatie))
+                (QC)    [.. .. ..]
+                        [.. .. ..]
+
+
+CONSTRAINTS
     VESSELS
-    a. Geen 2 vessels op dezelfde positie, op dezelfde tijd
+    a. Geen 2 vessels op dezelfde positie (kleiner zijn dan d), op dezelfde tijd
     b. Time shift respecteren
+        => Check
     c. Vessel mag niet out of bound
+        => forall i in vessels: A[i] + l[i] <= L
+
 
     QUAY CRANES
     a. Per tijdsperiode slechts 1 assignments
 
     ASSIGNMENT
     a. Vessel moet positioneel door QC kunnen worden geserved
+        forall qc, v in QC_allocations:
+            QC_allocations[qc][v]*(A[v] - qcbaseposition[qc]) >= 0
+            QC_allocations[qc][v]*(qcbaseposition[qc] + r - qcbaseposition[qc] - Lengths[v]) >= 0
     b. Elke vessel zijn minimale aantal QC
 
     
+EXTRA:
+    t_s = geshifte starttime (dus de effectieve)
+    t_e = gesshifte endttime (dus de effectieve)
+        = t_s + t_departure - t_start
+
+    overlap:
+        t1_s < t2_s && t2_s < t1_e
+        t1_s > t2_s && t1_s < t2_e 
