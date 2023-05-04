@@ -19,12 +19,23 @@ QC
     - base position: p_c
     - length: r
 
-
+ 
 
 Beslissingsvariabele
-    for all Vessels: st_i, A_i
+    for all Vessels: st_i, A_i, QC_i
 
 
 Constraints
-    a. Vessel moet door QC kunnen worden geserved
+    VESSELS
+    a. Geen 2 vessels op dezelfde positie, op dezelfde tijd
+    b. Time shift respecteren
+    c. Vessel mag niet out of bound
+
+    QUAY CRANES
+    a. Per tijdsperiode slechts 1 assignments
+
+    ASSIGNMENT
+    a. Vessel moet positioneel door QC kunnen worden geserved
+    b. Elke vessel zijn minimale aantal QC
+
     
