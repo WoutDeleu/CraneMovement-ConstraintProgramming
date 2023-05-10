@@ -5,7 +5,7 @@ int: s; %max shift time
 int: d; %Minimum safety distance
 int: C; %Number of cranes
 int: r; %Crane range
-array[1..N] of var 0..L: qcbasepositions; 
+array[int] of var 0..L: qcbasepositions; 
 array[1..N] of var 1..L: lengths;
 array[1..N] of var int: arrivaltimes;
 array[1..N] of var int: departuretimes;
@@ -21,31 +21,42 @@ set of int: vessel = 1..N;
 %enum vesselOrNothing = V(vessel) ++ { Nothing };
 %array[1..C,time] of var vesselOrNothing: craneAllocation;
 array[vessel] of var time: startingTimes;
+array[vessel] of var time: departureTimes;
+array[vessel] of var 0..s: possibleShift;
 array[vessel] of var position: vesselPositions;
 
 %% TUSSENSTAPPEN %%
 
-array[vessel,vessel] of var 0..1: positionOverlap;
-array[vessel,vessel] of var 0..1: timeOverlap; 
-
-constraint forall(v1 in vessel, v2 in vessel)%tijdsoverlap);
-constraint forall(v1 in vessel, v2 in vessel)%positieoverlap);
+array[vessel,vessel] of var bool: positionOverlap;
+array[vessel,vessel] of var bool: timeOverlap; 
 
 %%CONSTRAINTS%%
-%1: Time shift mogelijkheid 
+%Constraint 1: Time shift mogelijkheid 
 constraint forall(v in vessel)(startingTimes[v] >= arrivaltimes[v] /\ startingTimes[v] <= (arrivaltimes[v]+ s) mod 168);
 
-%2: Geen positie overlap op zelfde tijd
-% Beide overlappen mogen niet tegelijk voorkomen
+constraint forall(v in vessel) (departureTimes[v] = (startingTimes[v] + departuretimes[v]- arrivaltimes[v])mod 168);
 
-%3: Vessel moet door minimaal aantal qc assigned zijn
+%Constraint 2: Geen positie overlap op zelfde tijd
+constraint forall(v1 in vessel, v2 in vessel)(not(positionOverlap[v1,v2] /\ timeOverlap[v1,v2] /\ v1 != v2));% Beide overlappen mogen niet tegelijk voorkomen
 
+%constraint forall(v1 in vessel, v2 in vessel)(positionOverlap[v1,v2] = positionOverlap[v2,v1] /\ timeOverlap[v1,v2] = timeOverlap[v2,v1]);
+%symmetrie, wordt automatisch gehaald? kan de zoeksnelheid bevorderen
 
-%4: Afstanden tussen vessels
+constraint forall(v1 in vessel, v2 in vessel)(if (vesselPositions[v1] <= vesselPositions[v2]+ lengths[v2] + d /\  vesselPositions[v1] + lengths[v1] + d >= vesselPositions[v2]) then positionOverlap[v1,v2] = 1 endif); %position overlap
 
+constraint forall(v1 in vessel, v2 in vessel)(if (startingTimes[v1] <= departureTimes[v2] /\ departureTimes[v1] >= startingTimes[v2]) then timeOverlap[v1,v2] = 1 endif); %time overlap (todo: modulo nog uitzoeken)
 
-%5: position van vessel mag niet out of bounds gaan 
+%Constraint 3: position van vessel mag niet out of bounds gaan 
 constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
+
+%Constraint 4: Vessel moet door minimaal aantal qc assigned zijn
+
+%Constraint 5: Vessel moet door qc kunnen worden geserved
+
+%Constraint 6: Qc kan per tijdsperiode maar 1 vessel bedienen
+
+
+
 
 %%DOELFUNCTIE%%
 solve satisfy;
