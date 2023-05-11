@@ -1,5 +1,3 @@
-include "alldifferent.mzn";
-
 %%DATA%%
 int: N; %Number of vessels
 int: L; %quay length
@@ -54,7 +52,13 @@ constraint forall(v in vessel,c in cranes)(if craneSchedule[startingTimes[v],c] 
 constraint forall(v in vessel)(sum(c in cranes)(craneSchedule[startingTimes[v],c] = v)>=minimumnumqcs[v]);
 
 %Constraint 5: Vessel needs to be served by same QC over entire time period
-constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = 0);
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then (sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1) \/ (sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
+
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1) \/ (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
+
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1) \/ (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = 0)endif);
+
+
 % Cyclic
 
 
