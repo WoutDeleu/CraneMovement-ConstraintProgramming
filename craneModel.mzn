@@ -52,8 +52,9 @@ constraint forall(v in vessel, t in startingTimes[v]..departureTimes[v])(sum(c i
 
 %Constraint 5: Vessel needs to be served by same QC over entire time period
 constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = 0);
+% Cyclic
 
-%Constraint 6: Vessel mag niet bedient worden buiten de uren
+%Constraint 6: Vessel cant be served outside the possible hours
 constraint forall(c in cranes, v in vessel)(sum(t in 0..(startingTimes[v]-1))(craneAllocation[t,c] = v) = 0);
 
 constraint forall(c in cranes, v in vessel)(sum(t in (departureTimes[v]+1)..168)(craneAllocation[t,c] = v) = 0);
