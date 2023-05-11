@@ -15,11 +15,11 @@ array[1..N] of var 0..C: minimumnumqcs;
 set of int: position = 0..L;
 set of int: time = 0..168;
 set of int: vessel = 1..N;
+set of int: cranes = 1..C;
 
 
 %%BESLISSINGSVARIABELEN%%
-%enum vesselOrNothing = V(vessel) ++ { Nothing };
-%array[1..C,time] of var vesselOrNothing: craneAllocation;
+array[time,1..C] of var 0..N: craneAllocation;
 array[vessel] of var time: startingTimes;
 array[vessel] of var time: departureTimes;
 array[vessel] of var 0..s: possibleShift;
@@ -50,10 +50,15 @@ constraint forall(v1 in vessel, v2 in vessel)(if (startingTimes[v1] <= departure
 constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
 
 %Constraint 4: Vessel moet door minimaal aantal qc assigned zijn
+constraint forall(v in vessel, t in startingTimes[v]..departureTimes[v])(sum(c in cranes)(craneAllocation[t,c] = v)>=minimumnumqcs[v]);
 
-%Constraint 5: Vessel moet door qc kunnen worden geserved
+%Constraint 5: Vessel moet door dezelfde qc voor de hele tijdsperiode bediendt worden
+constraint forall(v in vessel, 
+c in cranes)(sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = departureTimes[v] - startingTimes[v] \/ sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = 0);
 
-%Constraint 6: Qc kan per tijdsperiode maar 1 vessel bedienen
+%Constraint 6: Vessel moet door qc kunnen worden geserved
+
+%Constraint 7: Qc kan per tijdsperiode maar 1 vessel bedienen
 
 
 
