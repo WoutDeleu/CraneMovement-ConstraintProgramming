@@ -49,12 +49,12 @@ constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
 
 %Constraint 4: Vessel needs to be seved the minimal amount QC
 constraint forall(v in vessel,c in cranes)(if craneSchedule[startingTimes[v],c] = v then craneAllocation[v,c] = 1 else craneAllocation[v,c] = 0 endif); 
-constraint forall(v in vessel)(sum(c in cranes)(craneSchedule[startingTimes[v],c] = v)>=minimumnumqcs[v]);
+constraint forall(v in vessel)(sum(c in cranes)(craneSchedule[startingTimes[v],c] = v)>=minimumnumqcs[v] /\ sum(c in cranes) (craneSchedule[departureTimes[v],c] = v)>=minimumnumqcs[v]);
 
 %Constraint 5: Vessel needs to be served by same QC over entire time period
 constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then (sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1) \/ (sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
 
-constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v]) \/ (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v]+1) \/ (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
 
 constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = 168 - startingTimes[v]+1) \/ (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = 0)endif);
 % Cyclic
@@ -77,12 +77,12 @@ constraint forall(c in cranes, v in vessel)(if craneSchedule[startingTimes[v], c
 solve satisfy;
 
 %%OUTPUT%%
-output [
-  "[\(vessel[v])]:[\(vesselPositions[v])]-[\(vesselPositions[v] + lengths[v])];[\(startingTimes[v])]..[\(departureTimes[v])];[" 
-    ++ concat([ if fix(craneAllocation[v, c]) 
-      then "QC\(fix(cranes[c]))_id," 
-      endif 
-    | c in cranes])
-  ++ "]\n"
-| v in vessel];
+%output [
+%  "[\(vessel[v])]:[\(vesselPositions[v])]-[\(vesselPositions[v] + lengths[v])];[\(startingTimes[v])]..[\(departureTimes[v])];[" 
+%    ++ concat([ if fix(craneAllocation[v, c]) 
+%      then "QC\(fix(cranes[c]))_id," 
+%      endif 
+%    | c in cranes])
+%  ++ "]\n"
+%| v in vessel];
 
