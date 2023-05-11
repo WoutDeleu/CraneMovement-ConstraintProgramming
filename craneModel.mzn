@@ -20,7 +20,8 @@ set of int: vessel = 1..N;
 set of int: cranes = 1..C;
 
 
-%%BESLISSINGSVARIABELEN%%
+%%DECISSIONVARIABLES%%
+array[time,1..C] of var 0..N: craneAllocation;
 array[vessel] of var time: startingTimes;
 array[vessel] of var time: departureTimes;
 array[vessel] of var 0..s: possibleShift;
@@ -28,46 +29,48 @@ array[vessel] of var position: vesselPositions;
 array[time,1..C] of var 0..N: craneSchedule;
 array[vessel, cranes] of var bool: craneAllocation;
 
-%% TUSSENSTAPPEN %%
 
 array[vessel,vessel] of var bool: positionOverlap;
 array[vessel,vessel] of var bool: timeOverlap; 
 
 %%CONSTRAINTS%%
-%Constraint 1: Time shift mogelijkheid 
+%Constraint 1: Time shift possibility 
 constraint forall(v in vessel)(startingTimes[v] >= arrivaltimes[v] /\ startingTimes[v] <= (arrivaltimes[v]+ s)mod 168);
 
 constraint forall(v in vessel) (departureTimes[v] = (startingTimes[v] + departuretimes[v]- arrivaltimes[v])mod 168);
 
-%Constraint 2: Geen positie overlap op zelfde tijd
-constraint forall(v1 in vessel, v2 in vessel)(not(positionOverlap[v1,v2] /\ timeOverlap[v1,v2] /\ v1 != v2));% Beide overlappen mogen niet tegelijk voorkomen
-
-%constraint forall(v1 in vessel, v2 in vessel)(positionOverlap[v1,v2] = positionOverlap[v2,v1] /\ timeOverlap[v1,v2] = timeOverlap[v2,v1]);
-%symmetrie, wordt automatisch gehaald? kan de zoeksnelheid bevorderen
+%Constraint 2: No position overlap on same time
+constraint forall(v1 in vessel, v2 in vessel)(not(positionOverlap[v1,v2] /\ timeOverlap[v1,v2] /\ v1 != v2));
 
 constraint forall(v1 in vessel, v2 in vessel)(if (vesselPositions[v1] <= vesselPositions[v2]+ lengths[v2] + d /\  vesselPositions[v1] + lengths[v1] + d >= vesselPositions[v2]) then positionOverlap[v1,v2] = 1 endif); %position overlap
 
 constraint forall(v1 in vessel, v2 in vessel)(if ((startingTimes[v1] <= departureTimes[v2] /\ departureTimes[v1] >= startingTimes[v2]) \/ (departureTimes[v2] <= startingTimes[v2]/\ departureTimes[v1] >= startingTimes[v2]) \/ (departureTimes[v1] <= startingTimes[v1] /\ departureTimes[v2] >= startingTimes[v1])) then timeOverlap[v1,v2] = 1 endif); %time overlap 
 
-%Constraint 3: position van vessel mag niet out of bounds gaan 
+%Constraint 3: Position of a vessel within bounds 
 constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
 
-%Constraint 4: Vessel moet door minimaal aantal qc assigned zijn
-constraint forall(v in vessel,c in cranes)(if craneSchedule[startingTimes[v],c] = v then craneAllocation[v,c] = 1 else craneAllocation[v,c] = 0 endif); 
-constraint forall(v in vessel)(sum(c in cranes)(craneSchedule[startingTimes[v],c] = v)>=minimumnumqcs[v]);
 
-%Constraint 5: Vessel moet door dezelfde qc voor de hele tijdsperiode bediendt worden
-constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = 0);
+%Constraint 4: Vessel needs to be seved the minimal amount QC
+constraint forall(v in vessel, t in startingTimes[v]..departureTimes[v])(sum(c in cranes)(craneAllocation[t,c] = v)>=minimumnumqcs[v]);
 
-%Constraint 6: Vessel mag niet bedient worden buiten de uren
-constraint forall(c in cranes, v in vessel)(sum(t in 0..(startingTimes[v]-1))(craneSchedule[t,c] = v) = 0);
+%Constraint 5: Vessel needs to be served by same QC over entire time period
+constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = 0);
+% Cyclic
 
-constraint forall(c in cranes, v in vessel)(sum(t in (departureTimes[v]+1)..168)(craneSchedule[t,c] = v) = 0);
 
-%Constraint 7: Vessel moet door qc kunnen worden geserved
-constraint forall(c in cranes, v in vessel)(if craneSchedule[startingTimes[v], c] = v then vesselPositions[v] >= qcbasepositions[c] /\ qcbasepositions[c] + r >= vesselPositions[v] + lengths[v] endif);
+%Constraint 6: Vessel cant be served outside the possible hours
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then sum(t in 0..(startingTimes[v]-1))(craneAllocation[t,c] = v) = 0 endif);
 
-%%DOELFUNCTIE%%
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then sum(t in (departureTimes[v]+1)..168)(craneAllocation[t,c] = v) = 0 endif);
+
+%constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then sum(t in (departureTimes[v]+1)..startingTimes[v]-1)(craneAllocation[t,c] = v) = 0 endif);
+% Cyclic
+
+
+%Constraint 7: Vessel must be in range of the QC
+constraint forall(c in cranes, v in vessel)(if craneAllocation[startingTimes[v], c] = v then vesselPositions[v] >= qcbasepositions[c] /\ qcbasepositions[c] + r >= vesselPositions[v] + lengths[v] endif);
+
+%%SOLVE%%
 solve satisfy;
 
 %%OUTPUT%%
