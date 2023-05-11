@@ -63,7 +63,7 @@ constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes
 
 constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then sum(t in (departureTimes[v]+1)..168)(craneSchedule[t,c] = v) = 0 endif);
 
-%constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then sum(t in (departureTimes[v]+1)..startingTimes[v]-1)(craneAllocation[t,c] = v) = 0 endif);
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then sum(t in (departureTimes[v]+1)..startingTimes[v]-1)(craneSchedule[t,c] = v) = 0 endif);
 % Cyclic
 
 
