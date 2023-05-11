@@ -44,7 +44,7 @@ constraint forall(v1 in vessel, v2 in vessel)(not(positionOverlap[v1,v2] /\ time
 
 constraint forall(v1 in vessel, v2 in vessel)(if (vesselPositions[v1] <= vesselPositions[v2]+ lengths[v2] + d /\  vesselPositions[v1] + lengths[v1] + d >= vesselPositions[v2]) then positionOverlap[v1,v2] = 1 endif); %position overlap
 
-constraint forall(v1 in vessel, v2 in vessel)(if (startingTimes[v1] <= departureTimes[v2] /\ departureTimes[v1] >= startingTimes[v2]) then timeOverlap[v1,v2] = 1 endif); %time overlap (todo: modulo nog uitzoeken)
+constraint forall(v1 in vessel, v2 in vessel)(if ((startingTimes[v1] <= departureTimes[v2] /\ departureTimes[v1] >= startingTimes[v2]) \/ (departureTimes[v2] <= startingTimes[v2]/\ departureTimes[v1] >= startingTimes[v2]) \/ (departureTimes[v1] <= startingTimes[v1] /\ departureTimes[v2] >= startingTimes[v1])) then timeOverlap[v1,v2] = 1 endif); %time overlap (todo: modulo nog uitzoeken)
 
 %Constraint 3: position van vessel mag niet out of bounds gaan 
 constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
@@ -53,8 +53,8 @@ constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
 constraint forall(v in vessel, t in startingTimes[v]..departureTimes[v])(sum(c in cranes)(craneAllocation[t,c] = v)>=minimumnumqcs[v]);
 
 %Constraint 5: Vessel moet door dezelfde qc voor de hele tijdsperiode bediendt worden
-constraint forall(v in vessel, 
-c in cranes)(sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = departureTimes[v] - startingTimes[v] \/ sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = 0);
+%constraint forall(v in vessel, 
+%c in cranes)(sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = departureTimes[v] - startingTimes[v] \/ sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = 0);
 
 %Constraint 6: Vessel moet door qc kunnen worden geserved
 
