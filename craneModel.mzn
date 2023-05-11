@@ -21,7 +21,6 @@ set of int: cranes = 1..C;
 
 
 %%DECISSIONVARIABLES%%
-array[time,1..C] of var 0..N: craneAllocation;
 array[vessel] of var time: startingTimes;
 array[vessel] of var time: departureTimes;
 array[vessel] of var 0..s: possibleShift;
@@ -51,24 +50,26 @@ constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
 
 
 %Constraint 4: Vessel needs to be seved the minimal amount QC
-constraint forall(v in vessel, t in startingTimes[v]..departureTimes[v])(sum(c in cranes)(craneAllocation[t,c] = v)>=minimumnumqcs[v]);
+constraint forall(v in vessel,c in cranes)(if craneSchedule[startingTimes[v],c] = v then craneAllocation[v,c] = 1 else craneAllocation[v,c] = 0 endif); 
+constraint forall(v in vessel)(sum(c in cranes)(craneSchedule[startingTimes[v],c] = v)>=minimumnumqcs[v]);
 
 %Constraint 5: Vessel needs to be served by same QC over entire time period
-constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = 0);
+constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = 0);
 % Cyclic
 
 
 %Constraint 6: Vessel cant be served outside the possible hours
-constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then sum(t in 0..(startingTimes[v]-1))(craneAllocation[t,c] = v) = 0 endif);
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then sum(t in 0..(startingTimes[v]-1))(craneSchedule[t,c] = v) = 0 endif);
 
-constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then sum(t in (departureTimes[v]+1)..168)(craneAllocation[t,c] = v) = 0 endif);
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then sum(t in (departureTimes[v]+1)..168)(craneSchedule[t,c] = v) = 0 endif);
 
 %constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then sum(t in (departureTimes[v]+1)..startingTimes[v]-1)(craneAllocation[t,c] = v) = 0 endif);
 % Cyclic
 
 
 %Constraint 7: Vessel must be in range of the QC
-constraint forall(c in cranes, v in vessel)(if craneAllocation[startingTimes[v], c] = v then vesselPositions[v] >= qcbasepositions[c] /\ qcbasepositions[c] + r >= vesselPositions[v] + lengths[v] endif);
+constraint forall(c in cranes, v in vessel)(if craneSchedule[startingTimes[v], c] = v then vesselPositions[v] >= qcbasepositions[c] /\ qcbasepositions[c] + r >= vesselPositions[v] + lengths[v] endif);
+
 
 %%SOLVE%%
 solve satisfy;
