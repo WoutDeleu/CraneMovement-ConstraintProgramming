@@ -21,11 +21,12 @@ set of int: cranes = 1..C;
 
 
 %%BESLISSINGSVARIABELEN%%
-array[time,1..C] of var 0..N: craneAllocation;
 array[vessel] of var time: startingTimes;
 array[vessel] of var time: departureTimes;
 array[vessel] of var 0..s: possibleShift;
 array[vessel] of var position: vesselPositions;
+array[time,1..C] of var 0..N: craneSchedule;
+array[vessel, cranes] of var bool: craneAllocation;
 
 %% TUSSENSTAPPEN %%
 
@@ -52,18 +53,30 @@ constraint forall(v1 in vessel, v2 in vessel)(if ((startingTimes[v1] <= departur
 constraint forall(v in vessel)(vesselPositions[v] + lengths[v] <= L);
 
 %Constraint 4: Vessel moet door minimaal aantal qc assigned zijn
-constraint forall(v in vessel, t in startingTimes[v]..departureTimes[v])(sum(c in cranes)(craneAllocation[t,c] = v)>=minimumnumqcs[v]);
+constraint forall(v in vessel,c in cranes)(if craneSchedule[startingTimes[v],c] = v then craneAllocation[v,c] = 1 else craneAllocation[v,c] = 0 endif); 
+constraint forall(v in vessel)(sum(c in cranes)(craneSchedule[startingTimes[v],c] = v)>=minimumnumqcs[v]);
 
 %Constraint 5: Vessel moet door dezelfde qc voor de hele tijdsperiode bediendt worden
-constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneAllocation[t,c] = v) = 0);
+constraint forall(c in cranes, v in vessel)(sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1 \/ sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = 0);
 
 %Constraint 6: Vessel mag niet bedient worden buiten de uren
-constraint forall(c in cranes, v in vessel)(sum(t in 0..(startingTimes[v]-1))(craneAllocation[t,c] = v) = 0);
+constraint forall(c in cranes, v in vessel)(sum(t in 0..(startingTimes[v]-1))(craneSchedule[t,c] = v) = 0);
 
-constraint forall(c in cranes, v in vessel)(sum(t in (departureTimes[v]+1)..168)(craneAllocation[t,c] = v) = 0);
+constraint forall(c in cranes, v in vessel)(sum(t in (departureTimes[v]+1)..168)(craneSchedule[t,c] = v) = 0);
 
 %Constraint 7: Vessel moet door qc kunnen worden geserved
-constraint forall(c in cranes, v in vessel)(if craneAllocation[startingTimes[v], c] = v then vesselPositions[v] >= qcbasepositions[c] /\ qcbasepositions[c] + r >= vesselPositions[v] + lengths[v] endif);
+constraint forall(c in cranes, v in vessel)(if craneSchedule[startingTimes[v], c] = v then vesselPositions[v] >= qcbasepositions[c] /\ qcbasepositions[c] + r >= vesselPositions[v] + lengths[v] endif);
 
 %%DOELFUNCTIE%%
 solve satisfy;
+
+%%OUTPUT%%
+output [
+  "[\(vessel[v])]:[\(vesselPositions[v])]-[\(vesselPositions[v] + lengths[v])];[\(startingTimes[v])]..[\(departureTimes[v])];[" 
+    ++ concat([ if fix(craneAllocation[v, c]) 
+      then "QC\(fix(cranes[c]))_id," 
+      endif 
+    | c in cranes])
+  ++ "]\n"
+| v in vessel];
+
