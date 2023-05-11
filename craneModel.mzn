@@ -54,11 +54,9 @@ constraint forall(v in vessel)(sum(c in cranes)(craneSchedule[startingTimes[v],c
 %Constraint 5: Vessel needs to be served by same QC over entire time period
 constraint forall(c in cranes, v in vessel)(if startingTimes[v] < departureTimes[v] then (sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1) \/ (sum(t in startingTimes[v]..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
 
-constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1) \/ (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = departureTimes[v]) \/ (sum(t in 0..departureTimes[v])(craneSchedule[t,c] = v) = 0)endif);
 
-constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = departureTimes[v] - startingTimes[v]+1) \/ (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = 0)endif);
-
-
+constraint forall(c in cranes, v in vessel)(if startingTimes[v] > departureTimes[v] then (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = 168 - startingTimes[v]+1) \/ (sum(t in startingTimes[v]..168)(craneSchedule[t,c] = v) = 0)endif);
 % Cyclic
 
 
