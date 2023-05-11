@@ -1,4 +1,3 @@
-include "member.mzn";
 %%DATA%%
 int: N; %Number of vessels
 int: L; %quay length
