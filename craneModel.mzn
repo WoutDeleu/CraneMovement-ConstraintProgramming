@@ -63,7 +63,7 @@ constraint forall(c in cranes, v in vessel)(sum(t in 0..(startingTimes[v]-1))(cr
 constraint forall(c in cranes, v in vessel)(sum(t in (departureTimes[v]+1)..168)(craneAllocation[t,c] = v) = 0);
 
 %Constraint 7: Vessel moet door qc kunnen worden geserved
-%constraint forall();
+constraint forall(c in cranes, v in vessel)(if craneAllocation[startingTimes[v], c] = v then vesselPositions[v] >= qcbasepositions[c] /\ qcbasepositions[c] + r >= vesselPositions[v] + lengths[v] endif);
 
 %%DOELFUNCTIE%%
 solve satisfy;
