@@ -1,3 +1,4 @@
+include "member.mzn";
 %%DATA%%
 int: N; %Number of vessels
 int: L; %quay length
@@ -78,12 +79,7 @@ solve satisfy;
 
 %%OUTPUT%%
 output [
-   "[\(vessel[v])]:[\(vesselPositions[v])]-[\(vesselPositions[v] + lengths[v])];[\(startingTimes[v])]..[\(departureTimes[v])];["
-    ++ join(",", [if fix(craneAllocation[v, c]) 
-              then "QC\(fix(cranes[c]))_id" 
-              else ""
-              endif 
-            | c in cranes])
-  ++ "]\n"
-| v in vessel];
+   "\(v):\(vesselPositions[v])-\(vesselPositions[v] + lengths[v]);\(startingTimes[v])..\(departureTimes[v]);" ++ 
+   (join(",", [show(c) | c in cranes where fix(craneAllocation[v,c]=1)]))++ 
+   "\n" | v in vessel];
 
