@@ -77,12 +77,13 @@ constraint forall(c in cranes, v in vessel)(if craneSchedule[startingTimes[v], c
 solve satisfy;
 
 %%OUTPUT%%
-%output [
-%  "[\(vessel[v])]:[\(vesselPositions[v])]-[\(vesselPositions[v] + lengths[v])];[\(startingTimes[v])]..[\(departureTimes[v])];[" 
-%    ++ concat([ if fix(craneAllocation[v, c]) 
-%      then "QC\(fix(cranes[c]))_id," 
-%      endif 
-%    | c in cranes])
-%  ++ "]\n"
-%| v in vessel];
+output [
+   "[\(vessel[v])]:[\(vesselPositions[v])]-[\(vesselPositions[v] + lengths[v])];[\(startingTimes[v])]..[\(departureTimes[v])];["
+    ++ join(",", [if fix(craneAllocation[v, c]) 
+              then "QC\(fix(cranes[c]))_id" 
+              else ""
+              endif 
+            | c in cranes])
+  ++ "]\n"
+| v in vessel];
 
