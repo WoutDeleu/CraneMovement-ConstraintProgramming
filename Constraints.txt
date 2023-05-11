@@ -63,7 +63,10 @@ EXTRA:
         = t_s + t_departure - t_start
 Overlap op de grens??
 
-time_overlap:
-      t1_s < t2_e && t1_e > t2_s modulo??
+    time_overlap:
+        t1_s < t2_e && t1_e > t2_s ||
+        t2_e < t2_s && t1_e > t2_s ||
+        t1_e < t1_s && t2_e > t1_s
+
 position_overlap:
 	p1_b < p2_e+d && p1_e +d > p2_b 
